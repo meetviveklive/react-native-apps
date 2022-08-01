@@ -1,0 +1,137 @@
+package Awesome.Project;
+
+import android.app.Application;
+import android.content.Context;
+import android.content.res.Configuration;
+import androidx.annotation.NonNull;
+
+import com.facebook.react.PackageList;
+import com.facebook.react.ReactApplication;
+import com.adobe.marketing.mobile.reactnative.RCTACPCorePackage;
+import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.ReactNativeHost;
+import com.facebook.react.ReactPackage;
+import com.facebook.soloader.SoLoader;
+
+import expo.modules.ApplicationLifecycleDispatcher;
+import expo.modules.ReactNativeHostWrapper;
+
+import com.facebook.react.bridge.JSIModulePackage;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+import com.adobe.marketing.mobile.AdobeCallback;
+import com.adobe.marketing.mobile.Identity;
+import com.adobe.marketing.mobile.InvalidInitException;
+import com.adobe.marketing.mobile.Lifecycle;
+import com.adobe.marketing.mobile.LoggingMode;
+import com.adobe.marketing.mobile.MobileCore;
+import com.adobe.marketing.mobile.Signal;
+import com.adobe.marketing.mobile.UserProfile;
+import com.adobe.marketing.mobile.WrapperType;
+import com.adobe.marketing.mobile.Target;
+import com.adobe.marketing.mobile.Analytics;
+// import {ACPTarget, ACPTargetPrefetchObject, ACPTargetRequestObject, ACPTargetOrder, ACPTargetProduct, ACPTargetParameters} from '@adobe/react-native-acptarget';
+
+
+
+public class MainApplication extends Application implements ReactApplication {
+  private final ReactNativeHost mReactNativeHost = new ReactNativeHostWrapper(
+    this,
+    new ReactNativeHost(this) {
+    @Override
+    public boolean getUseDeveloperSupport() {
+      return BuildConfig.DEBUG;
+    }
+
+    @Override
+    protected List<ReactPackage> getPackages() {
+      @SuppressWarnings("UnnecessaryLocalVariable")
+      List<ReactPackage> packages = new PackageList(this).getPackages();
+      // Packages that cannot be autolinked yet can be added manually here, for example:
+      // packages.add(new MyReactNativePackage());
+      return packages;
+    }
+
+    @Override
+    protected String getJSMainModuleName() {
+      return "index";
+    }
+  });
+
+  @Override
+  public ReactNativeHost getReactNativeHost() {
+    return mReactNativeHost;
+  }
+
+  @Override
+  public void onCreate() {
+    super.onCreate();
+        // console.log("Testing Console from Main Application");
+        MobileCore.setApplication(this);
+        MobileCore.setLogLevel(LoggingMode.DEBUG);
+        MobileCore.setWrapperType(WrapperType.REACT_NATIVE);
+    
+        try {
+          UserProfile.registerExtension();
+          Identity.registerExtension();
+          Lifecycle.registerExtension();
+          Signal.registerExtension();
+          Target.registerExtension();
+          Analytics.registerExtension();
+          MobileCore.start(new AdobeCallback () {
+              @Override
+              public void call(Object o) {
+                MobileCore.configureWithAppID("40a577f4818d/295db5104f19/launch-cea5a6f07d80-development");
+             }
+          });
+        } catch (InvalidInitException e) {
+          // console.log("Caught Exception");
+        }
+        
+        
+    
+    SoLoader.init(this, /* native exopackage */ false);
+
+    initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+    ApplicationLifecycleDispatcher.onApplicationCreate(this);
+  }
+
+  @Override
+  public void onConfigurationChanged(@NonNull Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig);
+  }
+
+  /**
+   * Loads Flipper in React Native templates. Call this in the onCreate method with something like
+   * initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+   *
+   * @param context
+   * @param reactInstanceManager
+   */
+  private static void initializeFlipper(
+      Context context, ReactInstanceManager reactInstanceManager) {
+    if (BuildConfig.DEBUG) {
+      try {
+        /*
+         We use reflection here to pick up the class that initializes Flipper,
+        since Flipper library is not available in release mode
+        */
+        Class<?> aClass = Class.forName("Awesome.Project.ReactNativeFlipper");
+        aClass
+            .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
+            .invoke(null, context, reactInstanceManager);
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+      } catch (NoSuchMethodException e) {
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      } catch (InvocationTargetException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+}
